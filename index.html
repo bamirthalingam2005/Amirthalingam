@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CHAT APPLICATION UI</title>
+  
+  <!-- React & Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Animated rainbow gradient background */
+    body {
+      background: linear-gradient(-45deg, #ff4d6d, #ffb347, #4ade80, #38bdf8, #a78bfa);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      font-family: 'Poppins', sans-serif;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Neon glowing text */
+    .neon-text {
+      text-shadow: 0 0 5px #fff, 0 0 10px #ff4d6d, 0 0 20px #ffb347, 0 0 40px #38bdf8;
+      animation: neonPulse 2s infinite alternate;
+    }
+    @keyframes neonPulse {
+      0% { text-shadow: 0 0 5px #fff, 0 0 10px #ff4d6d, 0 0 20px #ffb347, 0 0 40px #38bdf8; }
+      100% { text-shadow: 0 0 10px #fff, 0 0 20px #ff4d6d, 0 0 30px #ffb347, 0 0 60px #38bdf8; }
+    }
+
+    /* Neon user bubbles */
+    .user-gradient {
+      background: linear-gradient(135deg, #ff4d6d, #38bdf8);
+      box-shadow: 0 0 10px #ff4d6d, 0 0 20px #38bdf8;
+    }
+
+    /* Neon send button */
+    .neon-btn {
+      background: linear-gradient(45deg, #ff4d6d, #ffb347);
+      color: white;
+      box-shadow: 0 0 10px #ff4d6d, 0 0 20px #ffb347, 0 0 30px #ffb347;
+      transition: all 0.3s ease-in-out;
+    }
+    .neon-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #ff4d6d, 0 0 30px #ffb347, 0 0 50px #38bdf8;
+    }
+
+    /* Message bubble shadows */
+    .user-msg {
+      background: linear-gradient(to right, #4ade80, #38bdf8);
+      color: white;
+      box-shadow: 0 0 10px #4ade80, 0 0 20px #38bdf8;
+    }
+    .other-msg {
+      background: linear-gradient(to right, #f472b6, #fbbf24);
+      color: white;
+      box-shadow: 0 0 10px #f472b6, 0 0 20px #fbbf24;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+
+    function Sidebar({ users, selectedUser, setSelectedUser }) {
+      return (
+        <div className="w-64 bg-black/80 backdrop-blur-lg flex-shrink-0 shadow-lg rounded-r-2xl overflow-hidden">
+          <div className="p-4 text-2xl font-bold text-center neon-text border-b border-white/30">
+            Users
+          </div>
+          <ul className="p-2 space-y-2">
+            {users.map((user) => (
+              <li
+                key={user}
+                onClick={() => setSelectedUser(user)}
+                className={`cursor-pointer px-4 py-3 rounded-xl font-semibold text-white user-gradient hover:scale-105 transform transition-all ${
+                  user === selectedUser ? "ring-4 ring-yellow-300" : ""
+                }`}
+              >
+                {user}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    function MessageBubble({ sender, text }) {
+      const isUser = sender === "You";
+      return (
+        <div className={flex ${isUser ? "justify-end" : "justify-start"} px-2}>
+          <div className={`px-4 py-3 rounded-2xl max-w-xs break-words shadow-md ${
+            isUser ? "user-msg rounded-br-none" : "other-msg rounded-bl-none"
+          }`}>
+            {!isUser && <div className="text-xs font-semibold mb-1">{sender}</div>}
+            {text}
+          </div>
+        </div>
+      );
+    }
+
+    function ChatWindow({ selectedUser, messages }) {
+      const chatRef = React.useRef(null);
+
+      React.useEffect(() => {
+        chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
+      }, [messages]);
+
+      return (
+        <div className="flex-1 flex flex-col bg-black/20 rounded-tl-xl shadow-inner backdrop-blur-sm">
+          <div className="p-4 border-b bg-white/10 font-bold text-lg text-white neon-text">
+            Chat with {selectedUser}
+          </div>
+          <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.map((msg, idx) => (
+              <MessageBubble key={idx} sender={msg.sender} text={msg.text} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function MessageInput({ onSend }) {
+      const [text, setText] = React.useState("");
+
+      const handleSend = () => {
+        if (text.trim()) {
+          onSend(text);
+          setText("");
+        }
+      };
+
+      return (
+        <div className="p-3 border-t bg-white/10 flex rounded-b-xl backdrop-blur-sm shadow-lg">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type a message..."
+            className="flex-1 border-2 border-white/50 rounded-lg px-3 py-2 mr-2 outline-none focus:ring-2 focus:ring-pink-400 bg-white/20 text-white placeholder-white transition"
+          />
+          <button onClick={handleSend} className="neon-btn px-5 py-2 rounded-lg font-bold">
+            Send
+          </button>
+        </div>
+      );
+    }
+
+    function ChatApp() {
+      const [selectedUser, setSelectedUser] = React.useState("Alice");
+      const [messages, setMessages] = React.useState([]);
+      const users = ["Alice", "Bob", "Charlie", "David"];
+
+      const handleSend = (text) => {
+        setMessages((prev) => [...prev, { sender: "You", text }]);
+        setTimeout(() => {
+          setMessages((prev) => [...prev, { sender: selectedUser, text: "Echo: " + text }]);
+        }, 500);
+      };
+
+      return (
+        <div className="flex h-screen">
+          <Sidebar users={users} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
+          <div className="flex flex-col flex-1">
+            <ChatWindow selectedUser={selectedUser} messages={messages} />
+            <MessageInput onSend={handleSend} />
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<ChatApp />);
+
+  </script>
+</body>
+</html>
