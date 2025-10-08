@@ -99,7 +99,7 @@
     function MessageBubble({ sender, text }) {
       const isUser = sender === "You";
       return (
-        <div className={flex ${isUser ? "justify-end" : "justify-start"} px-2}>
+        <div className={`flex ${isUser ? "justify-end" : "justify-start"} px-2`}>
           <div className={`px-4 py-3 rounded-2xl max-w-xs break-words shadow-md ${
             isUser ? "user-msg rounded-br-none" : "other-msg rounded-bl-none"
           }`}>
